@@ -43,7 +43,7 @@ except Exception as e:
 ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_options)
 if ingredients_list:
     ingredients_string = ' '.join(ingredients_list)
-    for fruit_choosen in ingreients_list:
+    for fruit_choosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
         fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
         fv_df= st.dataframe(data= fruityvice_response.json(),use_container_width= True)
