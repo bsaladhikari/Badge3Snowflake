@@ -63,3 +63,8 @@ if ingredients_list:
 
 # Close Snowflake connection
 conn.close()
+
+#new section to display fruityvice nutrition information
+import requests 
+fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
+st.text(fruityvice_response)
