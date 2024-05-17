@@ -1,6 +1,7 @@
 import streamlit as st
 import snowflake.connector
 from snowflake.connector import DictCursor
+import requests
 
 # Snowflake connection parameters
 snowflake_config = {
@@ -63,9 +64,7 @@ if ingredients_list:
 
 # Close Snowflake connection
 conn.close()
-
-#new section to display fruityvice nutrition information
-import requests 
+ 
 fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-#st.text(fruityvice_response.json())
+
 fv_df= st.dataframe(data= fruityvice_response.json(),use_container_width= True)
