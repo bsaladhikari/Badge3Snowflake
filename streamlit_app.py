@@ -1,31 +1,65 @@
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
-from snowflake.snowpark.functions import col
+import snowflake.connector
+from snowflake.connector import DictCursor
 
+# Snowflake connection parameters
+snowflake_config = {
+    "account": "JABHSPH-JI44714",
+    "user": "BISHALDATAARMY",
+    "password": "Meronamebishal@12",
+    "role": "SYSADMIN",
+    "warehouse": "COMPUTE_WH",
+    "database": "SMOOTHIES",
+    "schema": "PUBLIC",
+    "client_session_keep_alive": True
+}
+
+# Establish Snowflake connection
+try:
+    conn = snowflake.connector.connect(**snowflake_config)
+    cursor = conn.cursor(DictCursor)
+except Exception as e:
+    st.error(f"Error: Failed to connect to Snowflake: {str(e)}")
+    st.stop()
+
+# Streamlit app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
-st.write(
-    """Choose the fruits you want in your custom smoothie!
-    """)
+st.write("Choose the fruits you want in your custom smoothie!")
 
-name_on_order =  st.text_input('Name On Smoothie:')
+name_on_order = st.text_input('Name On Smoothie:')
 st.write('The name on your Smoothie will be:', name_on_order)
 
-cnx = SnowflakeConnection()
-session = cnx.session
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+# Fetching fruit options from Snowflake
+try:
+    cursor.execute("SELECT FRUIT_NAME FROM smoothies.public.fruit_options")
+    my_dataframe = cursor.fetchall()
+    fruit_options = [row['FRUIT_NAME'] for row in my_dataframe]
+except Exception as e:
+    st.error(f"Error: Failed to fetch fruit options: {str(e)}")
+    st.stop()
 
-ingredients_list = st.multiselect('Choose up to 5 ingredients:', my_dataframe)
-if ingredients_list: 
+# Multiselect for ingredients
+ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_options)
+if ingredients_list:
     ingredients_string = ' '.join(ingredients_list)
     st.write(ingredients_string)
     
-    my_insert_stmt = """
+    # Prepare the insert statement
+    my_insert_stmt = f"""
         INSERT INTO smoothies.public.orders (ingredients, name_on_order)
-        VALUES ('{}', '{}')
-    """.format(ingredients_string.strip(), name_on_order.strip())
-    
+        VALUES ('{ingredients_string.strip()}', '{name_on_order.strip()}')
+    """
+
+    # Button to submit the order
     time_to_insert = st.button('Submit Order')
     
-    if time_to_insert: 
-        session.sql(my_insert_stmt).collect()
-        st.success('Your Smoothie is ordered!', icon='✅')
+    if time_to_insert:
+        try:
+            cursor.execute(my_insert_stmt)
+            conn.commit()
+            st.success('Your Smoothie is ordered!')
+        except Exception as e:
+            st.error(f"Error: Failed to insert order: {str(e)}")
+
+# Close Snowflake connection
+conn.close()
