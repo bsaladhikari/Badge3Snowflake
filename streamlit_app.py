@@ -33,8 +33,7 @@ st.write('The name on your Smoothie will be:', name_on_order)
 # Fetching fruit options from Snowflake
 try:
     cursor.execute("SELECT FRUIT_NAME FROM smoothies.public.fruit_options")
-    my_dataframe = cursor.fetchall()
-    fruit_options = [row['FRUIT_NAME'] for row in my_dataframe]
+    fruit_options = [row['FRUIT_NAME'] for row in cursor.fetchall()]
 except Exception as e:
     st.error(f"Error: Failed to fetch fruit options: {str(e)}")
     st.stop()
@@ -43,10 +42,10 @@ except Exception as e:
 ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_options)
 if ingredients_list:
     ingredients_string = ' '.join(ingredients_list)
-    for fruit_choosen in ingredients_list:
+    for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
         fruityvice_response = requests.get("https://fruityvice.com/api/fruit/watermelon")
-        fv_df= st.dataframe(data= fruityvice_response.json(),use_container_width= True)
+        fv_df = st.dataframe(data=fruityvice_response.json(), use_container_width=True)
     
     # Prepare the insert statement
     my_insert_stmt = f"""
@@ -67,5 +66,3 @@ if ingredients_list:
 
 # Close Snowflake connection
 conn.close()
- 
-
