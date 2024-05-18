@@ -41,8 +41,13 @@ except Exception as e:
 # Multiselect for ingredients
 if fruit_options:
     fruit_options_list = [(row['FRUIT_NAME'], row['SEARCH_ON']) for row in fruit_options]
+    max_selection = 5  # Maximum number of ingredients allowed
     
-    ingredients_list = st.multiselect('Choose up to 5 ingredients:', [option[0] for option in fruit_options_list], max_selection=5)
+    ingredients_list = st.multiselect('Choose up to 5 ingredients:', [option[0] for option in fruit_options_list])
+    if len(ingredients_list) > max_selection:
+        st.warning(f"Please select a maximum of {max_selection} ingredients.")
+        ingredients_list = ingredients_list[:max_selection]
+    
     if ingredients_list:
         ingredients_string = ' '.join(ingredients_list)
         
