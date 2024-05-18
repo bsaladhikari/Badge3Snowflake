@@ -38,20 +38,15 @@ except Exception as e:
     st.error(f"Error: Failed to fetch fruit options: {str(e)}")
     st.stop()
 
-# Close Snowflake connection
-conn.close()
-
 # Multiselect for ingredients
 if fruit_options:
     fruit_options_list = [(row['FRUIT_NAME'], row['SEARCH_ON']) for row in fruit_options]
     
-    ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_options_list, max_selection=5)
+    ingredients_list = st.multiselect('Choose up to 5 ingredients:', [option[0] for option in fruit_options_list], max_selection=5)
     if ingredients_list:
-        ingredients_string = ' '
+        ingredients_string = ' '.join(ingredients_list)
         
         for fruit_chosen in ingredients_list:
-                ingredients_string += fruit_chosen + ' '
-            
             search_on = next(option[1] for option in fruit_options_list if option[0] == fruit_chosen)
             st.write('The search value for', fruit_chosen, 'is', search_on)
             
@@ -63,7 +58,7 @@ if fruit_options:
         # Prepare the insert statement
         my_insert_stmt = f"""
             INSERT INTO smoothies.public.orders (ingredients, name_on_order)
-            VALUES ('{ingredients_string.strip()}', '{name_on_order.strip()}')
+            VALUES ('{ingredients_string}', '{name_on_order}')
         """
         
         # Button to submit the order
@@ -71,8 +66,6 @@ if fruit_options:
         
         if time_to_insert:
             try:
-                conn = snowflake.connector.connect(**snowflake_config)
-                cursor = conn.cursor()
                 cursor.execute(my_insert_stmt)
                 conn.commit()
                 st.success('Your Smoothie is ordered!')
