@@ -44,11 +44,14 @@ conn.close()
 # Multiselect for ingredients
 if fruit_options:
     fruit_options_list = [(row['FRUIT_NAME'], row['SEARCH_ON']) for row in fruit_options]
-    ingredients_list = st.multiselect('Choose up to 5 ingredients:', [option[0] for option in fruit_options_list])
+    
+    ingredients_list = st.multiselect('Choose up to 5 ingredients:', fruit_options_list, max_selection=5)
     if ingredients_list:
-        ingredients_string = ' '.join(ingredients_list)
+        ingredients_string = ' '
         
         for fruit_chosen in ingredients_list:
+                ingredients_string += fruit_chosen + ' '
+            
             search_on = next(option[1] for option in fruit_options_list if option[0] == fruit_chosen)
             st.write('The search value for', fruit_chosen, 'is', search_on)
             
